@@ -34,16 +34,12 @@ jobs:
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
       
-      - name: Set up NDK path
-        run: |
-          echo "ANDROID_NDK=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
-      
       - name: Build binaries
         run: |
           cd hyperion/core
           export ANDROID_NDK=$ANDROID_HOME/ndk/25.2.9519653
+          echo "Using NDK: $ANDROID_NDK"
+          ls -la $ANDROID_HOME/ndk/
           make clean
           make android
       

@@ -22,9 +22,23 @@ ifeq ($(ANDROID_NDK),)
     ANDROID_NDK := /opt/android-ndk
 endif
 
-# Toolchains
-ANDROID_TOOLCHAIN = $(ANDROID_NDK)/toolchains/llvm/prebuilt/darwin-x86_64/bin
-ANDROID_LINUX_TOOLCHAIN = $(ANDROID_NDK)/toolchains/llvm/prebuilt/linux-x86_64/bin
+# Detect toolchain automatically
+OS := $(shell uname)
+SYS := $(shell uname -m)
+
+# Try to find the toolchain
+ANDROID_TOOLCHAIN := $(ANDROID_NDK)/toolchains/llvm/prebuilt
+
+# Check different possible paths
+ifeq ($(OS),Darwin)
+    ifeq ($(SYS),x86_64)
+        ANDROID_TOOLCHAIN := $(ANDROID_TOOLCHAIN)/darwin-x86_64
+    else ifeq ($(SYS),arm64)
+        ANDROID_TOOLCHAIN := $(ANDROID_TOOLCHAIN)/darwin-arm64
+    endif
+else ifeq ($(OS),Linux)
+    ANDROID_TOOLCHAIN := $(ANDROID_TOOLCHAIN)/linux-x86_64
+endif
 
 .PHONY: all clean android arm64 arm7 x86 x86_64 help install
 
@@ -43,44 +57,28 @@ $(UTILS): $(UTILS_SRC)
 android: arm64 arm7 x86 x86_64
 
 # ARM64-v8a (primary)
-arm64: CROSS_PREFIX=$(ANDROID_TOOLCHAIN)/aarch64-linux-android-
-arm64: $(DAEMON)-arm64 $(UTILS)-arm64
-
-$(DAEMON)-arm64: $(DAEMON_SRC)
-	$(CROSS_PREFIX)clang++ $(CFLAGS) -target aarch64-linux-android21 -o $@ $< $(LDFLAGS)
-
-$(UTILS)-arm64: $(UTILS_SRC)
-	$(CROSS_PREFIX)clang++ $(CFLAGS) -target aarch64-linux-android21 -o $@ $< $(LDFLAGS)
+arm64: 
+	@echo "Building arm64..."
+	$(ANDROID_TOOLCHAIN)/bin/aarch64-linux-android21-clang++ $(CFLAGS) -target aarch64-linux-android21 -o $(DAEMON)-arm64 $(DAEMON_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/aarch64-linux-android21-clang++ $(CFLAGS) -target aarch64-linux-android21 -o $(UTILS)-arm64 $(UTILS_SRC)
 
 # ARMv7
-arm7: CROSS_PREFIX=$(ANDROID_TOOLCHAIN)/armv7a-linux-androideabi-
-arm7: $(DAEMON)-arm7 $(UTILS)-arm7
-
-$(DAEMON)-arm7: $(DAEMON_SRC)
-	$(CROSS_PREFIX)clang++ $(CFLAGS) -target armv7a-linux-androideabi21 -o $@ $< $(LDFLAGS)
-
-$(UTILS)-arm7: $(UTILS_SRC)
-	$(CROSS_PREFIX)clang++ $(CFLAGS) -target armv7a-linux-androideabi21 -o $@ $< $(LDFLAGS)
+arm7:
+	@echo "Building arm7..."
+	$(ANDROID_TOOLCHAIN)/bin/armv7a-linux-androideabi21-clang++ $(CFLAGS) -target armv7a-linux-androideabi21 -o $(DAEMON)-arm7 $(DAEMON_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/armv7a-linux-androideabi21-clang++ $(CFLAGS) -target armv7a-linux-androideabi21 -o $(UTILS)-arm7 $(UTILS_SRC)
 
 # x86
-x86: CROSS_PREFIX=$(ANDROID_TOOLCHAIN)/i686-linux-android-
-x86: $(DAEMON)-x86 $(UTILS)-x86
-
-$(DAEMON)-x86: $(DAEMON_SRC)
-	$(CROSS_PREFIX)clang++ $(CFLAGS) -target i686-linux-android21 -o $@ $< $(LDFLAGS)
-
-$(UTILS)-x86: $(UTILS_SRC)
-	$(CROSS_PREFIX)clang++ $(CFLAGS) -target i686-linux-android21 -o $@ $< $(LDFLAGS)
+x86:
+	@echo "Building x86..."
+	$(ANDROID_TOOLCHAIN)/bin/i686-linux-android21-clang++ $(CFLAGS) -target i686-linux-android21 -o $(DAEMON)-x86 $(DAEMON_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/i686-linux-android21-clang++ $(CFLAGS) -target i686-linux-android21 -o $(UTILS)-x86 $(UTILS_SRC)
 
 # x86_64
-x86_64: CROSS_PREFIX=$(ANDROID_TOOLCHAIN)/x86_64-linux-android-
-x86_64: $(DAEMON)-x86_64 $(UTILS)-x86_64
-
-$(DAEMON)-x86_64: $(DAEMON_SRC)
-	$(CROSS_PREFIX)clang++ $(CFLAGS) -target x86_64-linux-android21 -o $@ $< $(LDFLAGS)
-
-$(UTILS)-x86_64: $(UTILS_SRC)
-	$(CROSS_PREFIX)clang++ $(CFLAGS) -target x86_64-linux-android21 -o $@ $< $(LDFLAGS)
+x86_64:
+	@echo "Building x86_64..."
+	$(ANDROID_TOOLCHAIN)/bin/x86_64-linux-android21-clang++ $(CFLAGS) -target x86_64-linux-android21 -o $(DAEMON)-x86_64 $(DAEMON_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/x86_64-linux-android21-clang++ $(CFLAGS) -target x86_64-linux-android21 -o $(UTILS)-x86_64 $(UTILS_SRC)
 
 # Clean all
 clean:
@@ -119,4 +117,4 @@ help:
 	@echo "Variables:"
 	@echo "  CC          - C compiler (default: gcc)"
 	@echo "  CFLAGS      - Compiler flags (default: -O2 -Wall -Wextra -s)"
-	@echo "  ANDROID_NDK - Android NDK path"
+	@echo "  ANDROID_NDK - Android NDK path (auto-detected)"

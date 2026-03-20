@@ -25,8 +25,7 @@
     
     <!-- Messages -->
     <string name="profile_applied">Profile Applied</string>
-    <string name="service_started">Service Started</string>
-    <string name="service_stopped">Service Stopped</string>
+    <string name="service_started_msg">Service Started</string>
     <string name="module_not_found">Hyperion module not found. Please install the module first.</string>
     <string name="root_required">Root access required</string>
 </resources>

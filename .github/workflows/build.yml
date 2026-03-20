@@ -18,6 +18,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Debug - list files
+        run: |
+          echo "=== Current directory ==="
+          pwd
+          ls -la
+          echo ""
+          echo "=== Hyperion folder ==="
+          ls -la hyperion/ || echo "hyperion folder not found"
+          echo ""
+          echo "=== hyperion/system ==="
+          ls -la hyperion/system/ 2>/dev/null || echo "system not found"
+      
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -38,36 +50,25 @@ jobs:
         run: |
           cd hyperion/core
           export ANDROID_NDK=$ANDROID_HOME/ndk/25.2.9519653
-          echo "Using NDK: $ANDROID_NDK"
-          ls -la $ANDROID_HOME/ndk/
           make clean
           make android
-          ls -la *.arm64 *.x86 2>/dev/null || ls -la
+          ls -la *.arm64 *.x86 2>/dev/null || true
       
-      - name: Create system/bin directory
+      - name: Copy binaries
         run: |
           mkdir -p hyperion/system/bin
-          ls -la hyperion/system/bin/
-      
-      - name: Copy binaries to module
-        run: |
-          # Copy all arch binaries to module system/bin
           cp hyperion/core/hyperiond-arm64 hyperion/system/bin/
           cp hyperion/core/hyperiond-arm7 hyperion/system/bin/
           cp hyperion/core/hyperiond-x86 hyperion/system/bin/
           cp hyperion/core/hyperiond-x86_64 hyperion/system/bin/
-          
           cp hyperion/core/hyperion-arm64 hyperion/system/bin/hyperion
           cp hyperion/core/hyperion-arm7 hyperion/system/bin/hyperion
           cp hyperion/core/hyperion-x86 hyperion/system/bin/hyperion
           cp hyperion/core/hyperion-x86_64 hyperion/system/bin/hyperion
-          
-          # Create default symlinks (arm64)
           cd hyperion/system/bin
           ln -sf hyperiond-arm64 hyperiond
           ln -sf hyperion-arm64 hyperion
-          
-          ls -la hyperion/system/bin/
+          ls -la
       
       - name: Create module zip
         run: |

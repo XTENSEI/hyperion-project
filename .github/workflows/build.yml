@@ -5,7 +5,10 @@ on:
     branches: [ main, master ]
     paths:
       - 'hyperion/core/*.c'
+      - 'hyperion/core/*.rs'
       - 'hyperion/core/Makefile'
+      - 'hyperion/core/Cargo.toml'
+      - '.github/workflows/build.yml'
   release:
     types: [ created ]
   workflow_dispatch:
@@ -44,17 +47,38 @@ jobs:
       - name: Copy binaries
         run: |
           mkdir -p hyperion/system/bin
+          # Daemon
           cp hyperion/core/hyperiond-arm64 hyperion/system/bin/
           cp hyperion/core/hyperiond-arm7 hyperion/system/bin/
           cp hyperion/core/hyperiond-x86 hyperion/system/bin/
           cp hyperion/core/hyperiond-x86_64 hyperion/system/bin/
+          # Utils
           cp hyperion/core/hyperion-arm64 hyperion/system/bin/hyperion
           cp hyperion/core/hyperion-arm7 hyperion/system/bin/hyperion
           cp hyperion/core/hyperion-x86 hyperion/system/bin/hyperion
           cp hyperion/core/hyperion-x86_64 hyperion/system/bin/hyperion
+          # CPU optimizer
+          cp hyperion/core/hyperion_cpu-arm64 hyperion/system/bin/hyperion_cpu
+          cp hyperion/core/hyperion_cpu-arm7 hyperion/system/bin/hyperion_cpu
+          cp hyperion/core/hyperion_cpu-x86 hyperion/system/bin/hyperion_cpu
+          cp hyperion/core/hyperion_cpu-x86_64 hyperion/system/bin/hyperion_cpu
+          # Game booster
+          cp hyperion/core/hyperion_game-arm64 hyperion/system/bin/hyperion_game
+          cp hyperion/core/hyperion_game-arm7 hyperion/system/bin/hyperion_game
+          cp hyperion/core/hyperion_game-x86 hyperion/system/bin/hyperion_game
+          cp hyperion/core/hyperion_game-x86_64 hyperion/system/bin/hyperion_game
+          # Thermal manager
+          cp hyperion/core/hyperion_thermal-arm64 hyperion/system/bin/hyperion_thermal
+          cp hyperion/core/hyperion_thermal-arm7 hyperion/system/bin/hyperion_thermal
+          cp hyperion/core/hyperion_thermal-x86 hyperion/system/bin/hyperion_thermal
+          cp hyperion/core/hyperion_thermal-x86_64 hyperion/system/bin/hyperion_thermal
+          # Create symlinks for default arch
           cd hyperion/system/bin
           ln -sf hyperiond-arm64 hyperiond
           ln -sf hyperion-arm64 hyperion
+          ln -sf hyperion_cpu-arm64 hyperion_cpu
+          ln -sf hyperion_game-arm64 hyperion_game
+          ln -sf hyperion_thermal-arm64 hyperion_thermal
           ls -la
       
       - name: Create module zip

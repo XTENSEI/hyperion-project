@@ -11,10 +11,16 @@ LDFLAGS =
 # Binary names
 DAEMON = hyperiond
 UTILS = hyperion
+CPU = hyperion_cpu
+GAME = hyperion_game
+THERMAL = hyperion_thermal
 
 # Source files
 DAEMON_SRC = hyperion_daemon.c
 UTILS_SRC = hyperion_utils.c
+CPU_SRC = hyperion_cpu.c
+GAME_SRC = hyperion_game.c
+THERMAL_SRC = hyperion_thermal.c
 
 # Android NDK
 ANDROID_NDK ?= $(ANDROID_NDK_HOME)
@@ -53,6 +59,18 @@ $(DAEMON): $(DAEMON_SRC)
 $(UTILS): $(UTILS_SRC)
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
+# Build CPU optimizer for host
+$(CPU): $(CPU_SRC)
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+# Build game booster for host
+$(GAME): $(GAME_SRC)
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+# Build thermal manager for host
+$(THERMAL): $(THERMAL_SRC)
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
 # ============= Android Builds =============
 android: arm64 arm7 x86 x86_64
 
@@ -61,29 +79,45 @@ arm64:
 	@echo "Building arm64..."
 	$(ANDROID_TOOLCHAIN)/bin/aarch64-linux-android21-clang++ $(CFLAGS) -target aarch64-linux-android21 -o $(DAEMON)-arm64 $(DAEMON_SRC)
 	$(ANDROID_TOOLCHAIN)/bin/aarch64-linux-android21-clang++ $(CFLAGS) -target aarch64-linux-android21 -o $(UTILS)-arm64 $(UTILS_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/aarch64-linux-android21-clang++ $(CFLAGS) -target aarch64-linux-android21 -o $(CPU)-arm64 $(CPU_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/aarch64-linux-android21-clang++ $(CFLAGS) -target aarch64-linux-android21 -o $(GAME)-arm64 $(GAME_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/aarch64-linux-android21-clang++ $(CFLAGS) -target aarch64-linux-android21 -o $(THERMAL)-arm64 $(THERMAL_SRC)
 
 # ARMv7
 arm7:
 	@echo "Building arm7..."
 	$(ANDROID_TOOLCHAIN)/bin/armv7a-linux-androideabi21-clang++ $(CFLAGS) -target armv7a-linux-androideabi21 -o $(DAEMON)-arm7 $(DAEMON_SRC)
 	$(ANDROID_TOOLCHAIN)/bin/armv7a-linux-androideabi21-clang++ $(CFLAGS) -target armv7a-linux-androideabi21 -o $(UTILS)-arm7 $(UTILS_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/armv7a-linux-androideabi21-clang++ $(CFLAGS) -target armv7a-linux-androideabi21 -o $(CPU)-arm7 $(CPU_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/armv7a-linux-androideabi21-clang++ $(CFLAGS) -target armv7a-linux-androideabi21 -o $(GAME)-arm7 $(GAME_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/armv7a-linux-androideabi21-clang++ $(CFLAGS) -target armv7a-linux-androideabi21 -o $(THERMAL)-arm7 $(THERMAL_SRC)
 
 # x86
 x86:
 	@echo "Building x86..."
 	$(ANDROID_TOOLCHAIN)/bin/i686-linux-android21-clang++ $(CFLAGS) -target i686-linux-android21 -o $(DAEMON)-x86 $(DAEMON_SRC)
 	$(ANDROID_TOOLCHAIN)/bin/i686-linux-android21-clang++ $(CFLAGS) -target i686-linux-android21 -o $(UTILS)-x86 $(UTILS_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/i686-linux-android21-clang++ $(CFLAGS) -target i686-linux-android21 -o $(CPU)-x86 $(CPU_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/i686-linux-android21-clang++ $(CFLAGS) -target i686-linux-android21 -o $(GAME)-x86 $(GAME_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/i686-linux-android21-clang++ $(CFLAGS) -target i686-linux-android21 -o $(THERMAL)-x86 $(THERMAL_SRC)
 
 # x86_64
 x86_64:
 	@echo "Building x86_64..."
 	$(ANDROID_TOOLCHAIN)/bin/x86_64-linux-android21-clang++ $(CFLAGS) -target x86_64-linux-android21 -o $(DAEMON)-x86_64 $(DAEMON_SRC)
 	$(ANDROID_TOOLCHAIN)/bin/x86_64-linux-android21-clang++ $(CFLAGS) -target x86_64-linux-android21 -o $(UTILS)-x86_64 $(UTILS_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/x86_64-linux-android21-clang++ $(CFLAGS) -target x86_64-linux-android21 -o $(CPU)-x86_64 $(CPU_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/x86_64-linux-android21-clang++ $(CFLAGS) -target x86_64-linux-android21 -o $(GAME)-x86_64 $(GAME_SRC)
+	$(ANDROID_TOOLCHAIN)/bin/x86_64-linux-android21-clang++ $(CFLAGS) -target x86_64-linux-android21 -o $(THERMAL)-x86_64 $(THERMAL_SRC)
 
 # Clean all
 clean:
-	rm -f $(DAEMON) $(UTILS) $(DAEMON)-arm64 $(DAEMON)-arm7 $(DAEMON)-x86 $(DAEMON)-x86_64
+	rm -f $(DAEMON) $(UTILS) $(CPU) $(GAME) $(THERMAL)
+	rm -f $(DAEMON)-arm64 $(DAEMON)-arm7 $(DAEMON)-x86 $(DAEMON)-x86_64
 	rm -f $(UTILS)-arm64 $(UTILS)-arm7 $(UTILS)-x86 $(UTILS)-x86_64
+	rm -f $(CPU)-arm64 $(CPU)-arm7 $(CPU)-x86 $(CPU)-x86_64
+	rm -f $(GAME)-arm64 $(GAME)-arm7 $(GAME)-x86 $(GAME)-x86_64
+	rm -f $(THERMAL)-arm64 $(THERMAL)-arm7 $(THERMAL)-x86 $(THERMAL)-x86_64
 
 # Install binaries to module
 install:

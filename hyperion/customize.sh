@@ -39,7 +39,14 @@ detect_device() {
 
 # ─── Compile Daemon ────────────────────────────────────────────────────────
 compile_daemon() {
-    hlog "INFO" "Building daemon..."
+    hlog "INFO" "Checking for pre-compiled binaries..."
+    
+    # Check if we already have pre-compiled binaries from CI
+    if [ -f "$MODPATH/system/bin/hyperion" ] && [ -f "$MODPATH/system/bin/hyperiond" ]; then
+        hlog "INFO" "Pre-compiled binaries found, skipping on-device compilation"
+        chmod 755 "$MODPATH/system/bin/"* 2>/dev/null
+        return 0
+    fi
     
     # Check if we have the source
     if [ ! -f "$MODPATH/core/hyperion_daemon.c" ]; then
@@ -50,7 +57,7 @@ compile_daemon() {
     # Create bin directory
     mkdir -p "$MODPATH/system/bin"
     
-    # Try to compile (works on device with gcc)
+    # Try to compile (works on device with gcc/clang)
     if command -v gcc >/dev/null 2>&1; then
         cd "$MODPATH/core"
         gcc -O2 -Wall -Wextra -s -o "$MODPATH/system/bin/hyperion" hyperion_daemon.c 2>/dev/null
@@ -60,8 +67,17 @@ compile_daemon() {
         else
             hlog "WARN" "Daemon compilation failed"
         fi
+    elif command -v clang >/dev/null 2>&1; then
+        cd "$MODPATH/core"
+        clang -O2 -Wall -Wextra -s -o "$MODPATH/system/bin/hyperion" hyperion_daemon.c 2>/dev/null
+        if [ -f "$MODPATH/system/bin/hyperion" ]; then
+            hlog "INFO" "Daemon compiled successfully"
+            chmod 755 "$MODPATH/system/bin/hyperion"
+        else
+            hlog "WARN" "Daemon compilation failed"
+        fi
     else
-        hlog "WARN" "gcc not found, daemon will not be installed"
+        hlog "WARN" "No compiler found (gcc/clang), using shell fallback"
     fi
 }
 

@@ -1,0 +1,73 @@
+{
+  "name": "Balanced",
+  "id": "balanced",
+  "description": "Optimal balance between performance and battery life for daily use",
+  "icon": "⚖️",
+  "color": "#00d4ff",
+  "cpu": {
+    "governor": "schedutil",
+    "min_freq": "min",
+    "max_freq": "max",
+    "boost": false,
+    "idle_states": "balanced",
+    "irq_affinity": "balanced",
+    "schedutil_up_rate": 500,
+    "schedutil_down_rate": 20000,
+    "sched_boost": false
+  },
+  "gpu": {
+    "governor": "msm-adreno-tz",
+    "min_pwrlevel": 6,
+    "max_pwrlevel": 0,
+    "idle_timer": 64,
+    "throttling": true
+  },
+  "memory": {
+    "swappiness": 60,
+    "vfs_cache_pressure": 100,
+    "dirty_ratio": 30,
+    "dirty_background_ratio": 10,
+    "zram_size_pct": 50,
+    "zram_algorithm": "lz4",
+    "ksm": true,
+    "lmk_mode": "balanced"
+  },
+  "thermal": {
+    "engine_mode": "balanced",
+    "skin_temp_limit_c": 42,
+    "cooling_mode": "balanced"
+  },
+  "network": {
+    "tcp_congestion": "cubic",
+    "tcp_buffers": "balanced",
+    "wifi_power_save": true,
+    "low_latency": false
+  },
+  "io": {
+    "scheduler": "bfq",
+    "read_ahead_kb": 512,
+    "nr_requests": 64,
+    "queue_mode": "balanced"
+  },
+  "vm": {
+    "scheduler_mode": "balanced",
+    "hugepages": "madvise",
+    "compaction": "balanced"
+  },
+  "battery": {
+    "charging_current_ma": 2000,
+    "charging_voltage_mv": 4350,
+    "wakelock_mode": "normal",
+    "doze": "balanced",
+    "bg_process_limit": 16
+  },
+  "display": {
+    "refresh_rate": "adaptive",
+    "adaptive_refresh": true,
+    "color_mode": "natural",
+    "hbm": false
+  },
+  "doze": {
+    "mode": "balanced"
+  }
+}

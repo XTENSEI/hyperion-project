@@ -1,0 +1,71 @@
+{
+  "name": "Performance",
+  "id": "performance",
+  "description": "High performance for demanding tasks and heavy apps",
+  "icon": "⚡",
+  "color": "#ff8800",
+  "cpu": {
+    "governor": "performance",
+    "min_freq": "min",
+    "max_freq": "max",
+    "boost": true,
+    "idle_states": "performance",
+    "irq_affinity": "performance",
+    "sched_boost": true
+  },
+  "gpu": {
+    "governor": "performance",
+    "min_pwrlevel": 0,
+    "max_pwrlevel": 0,
+    "idle_timer": 64,
+    "throttling": false
+  },
+  "memory": {
+    "swappiness": 20,
+    "vfs_cache_pressure": 60,
+    "dirty_ratio": 25,
+    "dirty_background_ratio": 8,
+    "zram_size_pct": 25,
+    "zram_algorithm": "lz4",
+    "ksm": false,
+    "lmk_mode": "conservative"
+  },
+  "thermal": {
+    "engine_mode": "performance",
+    "skin_temp_limit_c": 45,
+    "cooling_mode": "performance"
+  },
+  "network": {
+    "tcp_congestion": "bbr",
+    "tcp_buffers": "performance",
+    "wifi_power_save": false,
+    "low_latency": true
+  },
+  "io": {
+    "scheduler": "mq-deadline",
+    "read_ahead_kb": 2048,
+    "nr_requests": 128,
+    "queue_mode": "performance"
+  },
+  "vm": {
+    "scheduler_mode": "performance",
+    "hugepages": "always",
+    "compaction": "performance"
+  },
+  "battery": {
+    "charging_current_ma": 3000,
+    "charging_voltage_mv": 4400,
+    "wakelock_mode": "normal",
+    "doze": "disabled",
+    "bg_process_limit": 32
+  },
+  "display": {
+    "refresh_rate": "max",
+    "adaptive_refresh": true,
+    "color_mode": "vivid",
+    "hbm": false
+  },
+  "doze": {
+    "mode": "disabled"
+  }
+}

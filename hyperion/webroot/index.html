@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0f">
+    <title>Hyperion</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-title">
+                <span class="logo-icon">⚡</span>
+                <span>Hyperion</span>
+            </div>
+            <div class="header-status">
+                <span id="cpuFreq">--</span> MHz
+                <span id="batteryLevel">--%</span>
+            </div>
+        </header>
+
+        <!-- Home Page -->
+        <div id="page-home" class="page active">
+            <!-- Profile Cards -->
+            <div class="section">
+                <div class="section-title">Profile</div>
+                <div class="profile-grid">
+                    <button class="profile-btn" data-profile="gaming" onclick="applyProfile('gaming')">
+                        <span class="icon">🎮</span>
+                        <span>Gaming</span>
+                    </button>
+                    <button class="profile-btn" data-profile="performance" onclick="applyProfile('performance')">
+                        <span class="icon">🚀</span>
+                        <span>Performance</span>
+                    </button>
+                    <button class="profile-btn" data-profile="balanced" onclick="applyProfile('balanced')">
+                        <span class="icon">⚖️</span>
+                        <span>Balanced</span>
+                    </button>
+                    <button class="profile-btn" data-profile="battery" onclick="applyProfile('battery')">
+                        <span class="icon">🔋</span>
+                        <span>Battery</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="section">
+                <div class="section-title">System</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">CPU</div>
+                        <div class="stat-value" id="stat-cpu">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">RAM</div>
+                        <div class="stat-value" id="stat-ram">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Temp</div>
+                        <div class="stat-value" id="stat-temp">--°</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Battery</div>
+                        <div class="stat-value" id="stat-battery">--%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Toggles -->
+            <div class="section">
+                <div class="section-title">Quick Toggle</div>
+                <div class="toggle-list">
+                    <div class="toggle-item">
+                        <span>Game Booster</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-gamebooster" onchange="toggleGameBooster(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-item">
+                        <span>AI Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-ai" checked onchange="toggleAI(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-item">
+                        <span>Bypass Charging</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-bypass" onchange="toggleBypass(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CPU Page -->
+        <div id="page-cpu" class="page">
+            <div class="section">
+                <div class="section-title">CPU Governor</div>
+                <select class="select-box" id="cpuGovernor" onchange="setCPUGovernor(this.value)">
+                    <option value="schedutil">Schedutil (Default)</option>
+                    <option value="performance">Performance</option>
+                    <option value="powersave">Powersave</option>
+                    <option value="ondemand">OnDemand</option>
+                    <option value="conservative">Conservative</option>
+                </select>
+            </div>
+            <div class="section">
+                <div class="section-title">CPU Info</div>
+                <div class="info-box">
+                    <div id="cpuInfo">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GPU Page -->
+        <div id="page-gpu" class="page">
+            <div class="section">
+                <div class="section-title">GPU Governor</div>
+                <select class="select-box" id="gpuGovernor" onchange="setGPUGovernor(this.value)">
+                    <option value="msm-adreno-tz">MSM Adreno TZ</option>
+                    <option value="performance">Performance</option>
+                    <option value="powersave">Powersave</option>
+                </select>
+            </div>
+            <div class="section">
+                <div class="section-title">GPU Info</div>
+                <div class="info-box">
+                    <div id="gpuInfo">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Memory Page -->
+        <div id="page-memory" class="page">
+            <div class="section">
+                <div class="section-title">Memory Preset</div>
+                <div class="preset-grid">
+                    <button class="preset-btn" onclick="setMemoryPreset('light')">Light</button>
+                    <button class="preset-btn" onclick="setMemoryPreset('balanced')">Balanced</button>
+                    <button class="preset-btn" onclick="setMemoryPreset('aggressive')">Aggressive</button>
+                    <button class="preset-btn" onclick="setMemoryPreset('extreme')">Extreme</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- IO Page -->
+        <div id="page-io" class="page">
+            <div class="section">
+                <div class="section-title">IO Scheduler</div>
+                <select class="select-box" id="ioScheduler" onchange="setIOScheduler(this.value)">
+                    <option value="noop">NOOP</option>
+                    <option value="deadline">Deadline</option>
+                    <option value="cfq">CFQ</option>
+                    <option value="mq-deadline">MQ Deadline</option>
+                    <option value="bfq">BFQ</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Display Page -->
+        <div id="page-display" class="page">
+            <div class="section">
+                <div class="section-title">Refresh Rate</div>
+                <select class="select-box" id="refreshRate" onchange="setRefreshRate(this.value)">
+                    <option value="60">60 Hz</option>
+                    <option value="90">90 Hz</option>
+                    <option value="120">120 Hz</option>
+                    <option value="144">144 Hz</option>
+                </select>
+            </div>
+            <div class="section">
+                <div class="section-title">Display Options</div>
+                <div class="toggle-list">
+                    <div class="toggle-item">
+                        <span>DC Dimming</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-dc" onchange="toggleDCDimming(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-item">
+                        <span>High Brightness</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-hbm" onchange="toggleHBM(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thermal Page -->
+        <div id="page-thermal" class="page">
+            <div class="section">
+                <div class="section-title">Thermal Profile</div>
+                <select class="select-box" id="thermalProfile" onchange="setThermalProfile(this.value)">
+                    <option value="default">Default</option>
+                    <option value="performance">Performance</option>
+                    <option value="battery">Battery</option>
+                    <option value="game">Game</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Battery Page -->
+        <div id="page-battery" class="page">
+            <div class="section">
+                <div class="section-title">Battery Profile</div>
+                <div class="preset-grid">
+                    <button class="preset-btn" onclick="setBatteryProfile('balanced')">Balanced</button>
+                    <button class="preset-btn" onclick="setBatteryProfile('maxbatt')">Max Battery</button>
+                    <button class="preset-btn" onclick="setBatteryProfile('fast')">Fast Charge</button>
+                    <button class="preset-btn" onclick="setBatteryProfile('smart')">Smart</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Booster Page -->
+        <div id="page-gamebooster" class="page">
+            <div class="section">
+                <div class="section-title">Game Booster</div>
+                <div class="toggle-list">
+                    <div class="toggle-item">
+                        <span>Enable Booster</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-gbenable" onchange="toggleGameBooster(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-item">
+                        <span>FPS Boost</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-fpsboost" onchange="toggleFPSBoost(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-item">
+                        <span>Touch Boost</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-touchboost" onchange="toggleTouchBoost(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="page-settings" class="page">
+            <div class="section">
+                <div class="section-title">About</div>
+                <div class="info-box">
+                    <p><strong>Hyperion Project</strong></p>
+                    <p>Version: 1.0.1</p>
+                    <p>Author: ShadowBytePrjkt</p>
+                </div>
+            </div>
+            <div class="section">
+                <button class="action-btn danger" onclick="uninstallModule()">Uninstall Module</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" data-page="page-home">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+        </button>
+        <button class="nav-btn" data-page="page-cpu">
+            <span class="nav-icon">⚙️</span>
+            <span>CPU</span>
+        </button>
+        <button class="nav-btn" data-page="page-gpu">
+            <span class="nav-icon">🎮</span>
+            <span>GPU</span>
+        </button>
+        <button class="nav-btn" data-page="page-memory">
+            <span class="nav-icon">🧠</span>
+            <span>RAM</span>
+        </button>
+        <button class="nav-btn" data-page="page-settings">
+            <span class="nav-icon">⚡</span>
+            <span>More</span>
+        </button>
+    </nav>
+
+    <script src="app.js"></script>
+</body>
+</html>

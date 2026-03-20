@@ -1,0 +1,61 @@
+{
+  "module": {
+    "name": "Hyperion Project",
+    "version": "1.0.1",
+    "author": "ShadowBytePrjkt",
+    "description": "Universal Android Performance Module with AI-driven profile management"
+  },
+  "profiles": {
+    "default": "balanced",
+    "on_boot": "balanced"
+  },
+  "ai": {
+    "enabled": true,
+    "decision_interval_sec": 2,
+    "hysteresis_min_interval_sec": 10,
+    "thermal_cooldown_sec": 60,
+    "confidence_threshold": 0.3
+  },
+  "notifications": {
+    "enabled": true,
+    "profile_changes": true,
+    "ai_decisions": false,
+    "thermal_warnings": true,
+    "battery_warnings": true,
+    "preload": true
+  },
+  "logging": {
+    "level": "INFO",
+    "max_file_size_mb": 10,
+    "max_files": 5
+  },
+  "cpu_governors": {
+    "normal": "",
+    "game": "",
+    "powersave": ""
+  },
+  "scheduler_io": {
+    "normal": "",
+    "game": "",
+    "powersave": ""
+  },
+  "advanced_dvfs": {
+    "cpu_limit": 100,
+    "gpu_limit": 100
+  },
+  "battery_saving": {
+    "bypass_charging": false,
+    "fast_charge": false,
+    "disable_network": false,
+    "gms_doze": false
+  },
+  "utility_tool": {
+    "show_toast": false,
+    "surface_flinger": false,
+    "disable_frame_rate": false
+  },
+  "renderer": {
+    "hwui": "default",
+    "engine": "default"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "scoring_overrides": {},
+  "learned_biases": {},
+  "thermal_adjustments": {},
+  "learned_app_suggestions": {},
+  "last_learning_update": null,
+  "learning_stats": {
+    "hourly_patterns": 0,
+    "app_preferences": 0,
+    "thermal_freq_24h": 0
+  },
+  "default_scoring": {
+    "cpu_high": { "gaming": 3, "performance": 2, "balanced": 0, "battery": -1, "powersave": -2 },
+    "cpu_critical": { "gaming": 5, "performance": 3, "balanced": 1, "battery": -2, "powersave": -3 },
+    "battery_low": { "gaming": -3, "performance": -2, "balanced": -1, "battery": 2, "powersave": 3 },
+    "battery_critical": { "gaming": -5, "performance": -5, "balanced": -3, "battery": 1, "powersave": 5 },
+    "temp_high": { "gaming": -2, "performance": -1, "balanced": 1, "battery": 2, "powersave": 2 },
+    "temp_critical": { "gaming": -5, "performance": -4, "balanced": 0, "battery": 3, "powersave": 4 },
+    "game_detected": { "gaming": 5, "performance": 2, "balanced": 0, "battery": -2, "powersave": -3 },
+    "screen_off": { "gaming": -5, "performance": -3, "balanced": -1, "battery": 3, "powersave": 5 },
+    "charging": { "gaming": 1, "performance": 1, "balanced": 0, "battery": 0, "powersave": -1 },
+    "network_burst": { "gaming": 1, "performance": 1, "balanced": 1, "battery": -1, "powersave": -2 },
+    "ram_low": { "gaming": -1, "performance": -1, "balanced": 1, "battery": 2, "powersave": 2 },
+    "idle": { "gaming": -3, "performance": -2, "balanced": 0, "battery": 2, "powersave": 3 }
+  },
+  "thresholds": {
+    "cpu_high": 80,
+    "cpu_critical": 95,
+    "battery_low": 20,
+    "battery_critical": 5,
+    "temp_high": 45,
+    "temp_critical": 50,
+    "ram_low": 80
+  }
+}

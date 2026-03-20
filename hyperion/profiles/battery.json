@@ -1,0 +1,74 @@
+{
+  "name": "Battery Saver",
+  "id": "battery",
+  "description": "Extended battery life while maintaining usability",
+  "icon": "🔋",
+  "color": "#44ff88",
+  "cpu": {
+    "governor": "schedutil",
+    "min_freq": "min",
+    "max_freq": "75%",
+    "boost": false,
+    "idle_states": "powersave",
+    "irq_affinity": "balanced",
+    "schedutil_up_rate": 2000,
+    "schedutil_down_rate": 50000,
+    "sched_boost": false
+  },
+  "gpu": {
+    "governor": "powersave",
+    "min_pwrlevel": 6,
+    "max_pwrlevel": 4,
+    "idle_timer": 32,
+    "throttling": true
+  },
+  "memory": {
+    "swappiness": 100,
+    "vfs_cache_pressure": 200,
+    "dirty_ratio": 40,
+    "dirty_background_ratio": 15,
+    "zram_size_pct": 75,
+    "zram_algorithm": "zstd",
+    "ksm": true,
+    "lmk_mode": "aggressive"
+  },
+  "thermal": {
+    "engine_mode": "conservative",
+    "skin_temp_limit_c": 38,
+    "cooling_mode": "conservative"
+  },
+  "network": {
+    "tcp_congestion": "westwood",
+    "tcp_buffers": "powersave",
+    "wifi_power_save": true,
+    "low_latency": false
+  },
+  "io": {
+    "scheduler": "kyber",
+    "read_ahead_kb": 128,
+    "nr_requests": 32,
+    "queue_mode": "powersave"
+  },
+  "vm": {
+    "scheduler_mode": "powersave",
+    "hugepages": "never",
+    "compaction": "powersave"
+  },
+  "battery": {
+    "charging_current_ma": 1500,
+    "charging_voltage_mv": 4300,
+    "wakelock_mode": "aggressive",
+    "doze": "aggressive",
+    "bg_process_limit": 4
+  },
+  "display": {
+    "refresh_rate": 60,
+    "adaptive_refresh": false,
+    "color_mode": "natural",
+    "hbm": false,
+    "screen_timeout_ms": 30000
+  },
+  "doze": {
+    "mode": "aggressive"
+  }
+}

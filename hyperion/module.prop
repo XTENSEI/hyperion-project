@@ -1,0 +1,7 @@
+id=hyperion_project
+name=Hyperion Project
+version=v1.0.0
+versionCode=100
+author=ShadowBytePrjkt
+description=Universal Android Performance Module with AI-driven profile management, real-time monitoring, and beautiful WebUI
+updateJson=https://raw.githubusercontent.com/ShadowBytePrjkt/hyperion-project/main/update.json

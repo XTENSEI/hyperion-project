@@ -1,0 +1,16 @@
+[package]
+name = "hyperion_stats"
+version = "1.0.0"
+edition = "2021"
+authors = ["ShadowBytePrjkt"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+ctrlc = "3.2"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

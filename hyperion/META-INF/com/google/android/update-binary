@@ -1,0 +1,146 @@
+#!/sbin/sh
+# =============================================================================
+# Hyperion Project - Magisk Module Installer
+# Made by ShadowBytePrjkt
+# =============================================================================
+
+SKIPUNZIP=1
+
+# ─── UI Functions ─────────────────────────────────────────────────────────────
+ui_print() { echo "$1"; }
+abort() { ui_print "ERROR: $1"; exit 1; }
+
+# ─── Extract Module ───────────────────────────────────────────────────────────
+ui_print ""
+ui_print "╔══════════════════════════════════════╗"
+ui_print "║       HYPERION PROJECT v1.0.0        ║"
+ui_print "║   Universal Android Performance      ║"
+ui_print "║        Made by ShadowBytePrjkt       ║"
+ui_print "╚══════════════════════════════════════╝"
+ui_print ""
+
+# Extract files
+ui_print "- Extracting module files..."
+unzip -o "$ZIPFILE" -x 'META-INF/*' -d "$MODPATH" >&2
+
+# ─── Architecture Detection ───────────────────────────────────────────────────
+ui_print "- Detecting device architecture..."
+ARCH=$(uname -m)
+case "$ARCH" in
+    aarch64|arm64) ABI="arm64-v8a" ;;
+    armv7l|armv8l) ABI="armeabi-v7a" ;;
+    x86_64)        ABI="x86_64" ;;
+    x86)           ABI="x86" ;;
+    *)             ABI="arm64-v8a" ;;
+esac
+ui_print "  Architecture: $ARCH ($ABI)"
+
+# ─── Android Version Check ────────────────────────────────────────────────────
+ANDROID_VER=$(getprop ro.build.version.release)
+SDK_VER=$(getprop ro.build.version.sdk)
+ui_print "- Android version: $ANDROID_VER (SDK $SDK_VER)"
+
+if [ "$SDK_VER" -lt 26 ]; then
+    abort "Android 8.0+ (SDK 26+) required. Your device has SDK $SDK_VER."
+fi
+
+# ─── Root Method Detection ────────────────────────────────────────────────────
+if [ -d "/data/adb/ksu" ]; then
+    ROOT_METHOD="KernelSU"
+elif [ -d "/data/adb/magisk" ]; then
+    ROOT_METHOD="Magisk"
+else
+    ROOT_METHOD="Unknown"
+fi
+ui_print "- Root method: $ROOT_METHOD"
+
+# ─── SoC Detection ────────────────────────────────────────────────────────────
+SOC=$(getprop ro.board.platform)
+HARDWARE=$(getprop ro.hardware)
+ui_print "- SoC: $SOC / Hardware: $HARDWARE"
+
+# ─── Copy Appropriate Binary ──────────────────────────────────────────────────
+ui_print "- Installing hyperion daemon binary..."
+BINARY_SRC="$MODPATH/prebuilt/$ABI/hyperion"
+BINARY_DST="$MODPATH/system/bin/hyperion"
+
+if [ -f "$BINARY_SRC" ]; then
+    cp "$BINARY_SRC" "$BINARY_DST"
+    chmod 755 "$BINARY_DST"
+    ui_print "  Binary installed: $ABI"
+else
+    ui_print "  WARNING: Prebuilt binary not found for $ABI, using fallback"
+fi
+
+# ─── Set Permissions ──────────────────────────────────────────────────────────
+ui_print "- Setting permissions..."
+set_perm_recursive "$MODPATH/scripts"  root root 0755 0755
+set_perm_recursive "$MODPATH/core"     root root 0755 0755
+set_perm "$MODPATH/service.sh"         root root 0755
+set_perm "$MODPATH/action.sh"          root root 0755
+set_perm "$MODPATH/cleanup.sh"         root root 0755
+set_perm "$MODPATH/customize.sh"       root root 0755
+
+# ─── Create Data Directories ──────────────────────────────────────────────────
+ui_print "- Creating data directories..."
+DATA_DIR="/data/adb/hyperion"
+mkdir -p "$DATA_DIR/logs"
+mkdir -p "$DATA_DIR/data"
+mkdir -p "$DATA_DIR/profiles"
+chmod -R 755 "$DATA_DIR"
+
+# ─── Copy Default Config ──────────────────────────────────────────────────────
+if [ ! -f "$DATA_DIR/config.json" ]; then
+    cp "$MODPATH/config/config.json" "$DATA_DIR/config.json"
+fi
+if [ ! -f "$DATA_DIR/ai_rules.json" ]; then
+    cp "$MODPATH/config/ai_rules.json" "$DATA_DIR/ai_rules.json"
+fi
+if [ ! -f "$DATA_DIR/app_profiles.json" ]; then
+    cp "$MODPATH/config/app_profiles.json" "$DATA_DIR/app_profiles.json"
+fi
+
+# ─── Node.js Check ────────────────────────────────────────────────────────────
+ui_print "- Checking Node.js availability..."
+if command -v node >/dev/null 2>&1; then
+    NODE_VER=$(node --version)
+    ui_print "  Node.js found: $NODE_VER"
+else
+    ui_print "  WARNING: Node.js not found. WebUI will be unavailable."
+    ui_print "  Install Termux and run: pkg install nodejs"
+fi
+
+# ─── Python Check ─────────────────────────────────────────────────────────────
+ui_print "- Checking Python availability..."
+if command -v python3 >/dev/null 2>&1; then
+    PY_VER=$(python3 --version)
+    ui_print "  Python found: $PY_VER"
+else
+    ui_print "  WARNING: Python3 not found. AI engine will be unavailable."
+    ui_print "  Install Termux and run: pkg install python"
+fi
+
+# ─── Write Device Info ────────────────────────────────────────────────────────
+cat > "$DATA_DIR/device_info.json" << EOF
+{
+  "arch": "$ABI",
+  "android_version": "$ANDROID_VER",
+  "sdk": $SDK_VER,
+  "soc": "$SOC",
+  "hardware": "$HARDWARE",
+  "root_method": "$ROOT_METHOD",
+  "install_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF
+
+# ─── Cleanup Prebuilt ─────────────────────────────────────────────────────────
+rm -rf "$MODPATH/prebuilt"
+
+ui_print ""
+ui_print "╔══════════════════════════════════════╗"
+ui_print "║     Installation Complete! 🚀        ║"
+ui_print "║                                      ║"
+ui_print "║  Reboot your device to activate      ║"
+ui_print "║  WebUI: http://localhost:8080         ║"
+ui_print "╚══════════════════════════════════════╝"
+ui_print ""

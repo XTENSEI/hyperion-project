@@ -1,0 +1,74 @@
+{
+  "name": "Gaming",
+  "id": "gaming",
+  "description": "Maximum performance for gaming - all resources unleashed",
+  "icon": "🎮",
+  "color": "#ff4444",
+  "cpu": {
+    "governor": "performance",
+    "min_freq": "min",
+    "max_freq": "max",
+    "boost": true,
+    "idle_states": "performance",
+    "irq_affinity": "performance",
+    "schedutil_up_rate": 200,
+    "schedutil_down_rate": 5000,
+    "sched_boost": true
+  },
+  "gpu": {
+    "governor": "performance",
+    "min_pwrlevel": 0,
+    "max_pwrlevel": 0,
+    "idle_timer": 10000,
+    "force_clk_on": true,
+    "throttling": false
+  },
+  "memory": {
+    "swappiness": 10,
+    "vfs_cache_pressure": 50,
+    "dirty_ratio": 20,
+    "dirty_background_ratio": 5,
+    "zram_size_pct": 25,
+    "zram_algorithm": "lz4",
+    "ksm": false,
+    "lmk_mode": "conservative"
+  },
+  "thermal": {
+    "engine_mode": "performance",
+    "skin_temp_limit_c": 48,
+    "cooling_mode": "performance"
+  },
+  "network": {
+    "tcp_congestion": "bbr",
+    "tcp_buffers": "performance",
+    "wifi_power_save": false,
+    "low_latency": true
+  },
+  "io": {
+    "scheduler": "mq-deadline",
+    "read_ahead_kb": 2048,
+    "nr_requests": 128,
+    "queue_mode": "performance"
+  },
+  "vm": {
+    "scheduler_mode": "performance",
+    "hugepages": "always",
+    "compaction": "performance"
+  },
+  "battery": {
+    "charging_current_ma": 3000,
+    "charging_voltage_mv": 4400,
+    "wakelock_mode": "normal",
+    "doze": "disabled",
+    "bg_process_limit": 32
+  },
+  "display": {
+    "refresh_rate": "max",
+    "adaptive_refresh": false,
+    "color_mode": "vivid",
+    "hbm": false
+  },
+  "doze": {
+    "mode": "disabled"
+  }
+}

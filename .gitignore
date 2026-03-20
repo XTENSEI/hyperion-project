@@ -1,0 +1,11 @@
+# Ignore unnecessary files
+*.mp3
+*.lrc
+*.zip
+*.pyc
+__pycache__/
+.venv/
+
+# Include these directories
+!/hyperion
+!/plans

@@ -1,4 +1,4 @@
-name: Build Android Binaries
+name: Build Android Binaries & Module
 
 on:
   push:
@@ -46,37 +46,55 @@ jobs:
           make clean
           make android
       
-      - name: Create binaries directory
+      - name: Copy binaries to module
         run: |
-          mkdir -p build
+          # Copy all arch binaries to module system/bin
+          cp hyperion/core/hyperiond-arm64 hyperion/system/bin/
+          cp hyperion/core/hyperiond-arm7 hyperion/system/bin/
+          cp hyperion/core/hyperiond-x86 hyperion/system/bin/
+          cp hyperion/core/hyperiond-x86_64 hyperion/system/bin/
+          
+          cp hyperion/core/hyperion-arm64 hyperion/system/bin/hyperion
+          cp hyperion/core/hyperion-arm7 hyperion/system/bin/hyperion
+          cp hyperion/core/hyperion-x86 hyperion/system/bin/hyperion
+          cp hyperion/core/hyperion-x86_64 hyperion/system/bin/hyperion
+          
+          # Create default symlinks (arm64)
+          cd hyperion/system/bin
+          ln -sf hyperiond-arm64 hyperiond
+          ln -sf hyperion-arm64 hyperion
+          
+          ls -la hyperion/system/bin/
       
-      - name: Copy binaries
+      - name: Create module zip
         run: |
-          cp hyperion/core/hyperiond-arm64 build/
-          cp hyperion/core/hyperiond-arm7 build/
-          cp hyperion/core/hyperiond-x86 build/
-          cp hyperion/core/hyperiond-x86_64 build/
-          cp hyperion/core/hyperion-arm64 build/hyperion
-          cp hyperion/core/hyperion-arm7 build/hyperion
-          cp hyperion/core/hyperion-x86 build/hyperion
-          cp hyperion/core/hyperion-x86_64 build/hyperion
-          ls -la build/
+          cd hyperion
+          zip -r ../hyperion-module.zip . -x "*.git*"
+          ls -la ../hyperion-module.zip
       
-      - name: Create archive
-        run: |
-          cd build
-          tar -czvf ../hyperion-binaries.tar.gz *
+      - name: Upload module artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hyperion-module
+          path: hyperion-module.zip
       
       - name: Upload binaries artifact
         uses: actions/upload-artifact@v4
         with:
           name: hyperion-binaries
-          path: hyperion-binaries.tar.gz
+          path: |
+            hyperion-core/hyperiond-arm64
+            hyperion-core/hyperiond-arm7
+            hyperion-core/hyperiond-x86
+            hyperion-core/hyperiond-x86_64
+            hyperion-core/hyperion-arm64
       
       - name: Upload to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v1
         with:
-          files: hyperion-binaries.tar.gz
+          files: |
+            hyperion-module.zip
+            hyperion-binaries.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

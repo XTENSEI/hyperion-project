@@ -1,0 +1,82 @@
+name: Build Android Binaries
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'hyperion/core/*.c'
+      - 'hyperion/core/Makefile'
+  release:
+    types: [ created ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+      
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+      
+      - name: Install Android NDK
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;25.2.9519653"
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+      
+      - name: Set up NDK path
+        run: |
+          echo "ANDROID_NDK=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+      
+      - name: Build binaries
+        run: |
+          cd hyperion/core
+          export ANDROID_NDK=$ANDROID_HOME/ndk/25.2.9519653
+          make clean
+          make android
+      
+      - name: Create binaries directory
+        run: |
+          mkdir -p build
+      
+      - name: Copy binaries
+        run: |
+          cp hyperion/core/hyperiond-arm64 build/
+          cp hyperion/core/hyperiond-arm7 build/
+          cp hyperion/core/hyperiond-x86 build/
+          cp hyperion/core/hyperiond-x86_64 build/
+          cp hyperion/core/hyperion-arm64 build/hyperion
+          cp hyperion/core/hyperion-arm7 build/hyperion
+          cp hyperion/core/hyperion-x86 build/hyperion
+          cp hyperion/core/hyperion-x86_64 build/hyperion
+          ls -la build/
+      
+      - name: Create archive
+        run: |
+          cd build
+          tar -czvf ../hyperion-binaries.tar.gz *
+      
+      - name: Upload binaries artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hyperion-binaries
+          path: hyperion-binaries.tar.gz
+      
+      - name: Upload to Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: hyperion-binaries.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

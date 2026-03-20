@@ -26,7 +26,7 @@
         <div id="page-home" class="page active">
             <!-- Profile Cards -->
             <div class="section">
-                <div class="section-title">Profile</div>
+                <div class="section-title">Performance Profile</div>
                 <div class="profile-grid">
                     <button class="profile-btn" data-profile="gaming" onclick="applyProfile('gaming')">
                         <span class="icon">🎮</span>
@@ -49,7 +49,7 @@
 
             <!-- Quick Stats -->
             <div class="section">
-                <div class="section-title">System</div>
+                <div class="section-title">System Monitor</div>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">CPU</div>
@@ -75,21 +75,21 @@
                 <div class="section-title">Quick Toggle</div>
                 <div class="toggle-list">
                     <div class="toggle-item">
-                        <span>Game Booster</span>
+                        <span>🎮 Game Booster</span>
                         <label class="switch">
                             <input type="checkbox" id="toggle-gamebooster" onchange="toggleGameBooster(this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
                     <div class="toggle-item">
-                        <span>AI Mode</span>
+                        <span>🤖 AI Mode</span>
                         <label class="switch">
                             <input type="checkbox" id="toggle-ai" checked onchange="toggleAI(this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
                     <div class="toggle-item">
-                        <span>Bypass Charging</span>
+                        <span>⚡ Bypass Charging</span>
                         <label class="switch">
                             <input type="checkbox" id="toggle-bypass" onchange="toggleBypass(this.checked)">
                             <span class="slider"></span>
@@ -104,7 +104,7 @@
             <div class="section">
                 <div class="section-title">CPU Governor</div>
                 <select class="select-box" id="cpuGovernor" onchange="setCPUGovernor(this.value)">
-                    <option value="schedutil">Schedutil (Default)</option>
+                    <option value="schedutil">Schedutil</option>
                     <option value="performance">Performance</option>
                     <option value="powersave">Powersave</option>
                     <option value="ondemand">OnDemand</option>
@@ -112,7 +112,16 @@
                 </select>
             </div>
             <div class="section">
-                <div class="section-title">CPU Info</div>
+                <div class="section-title">CPU Frequency</div>
+                <div class="preset-grid">
+                    <button class="preset-btn" onclick="setCPUMinFreq(300)">Min 300</button>
+                    <button class="preset-btn" onclick="setCPUMinFreq(700)">Min 700</button>
+                    <button class="preset-btn" onclick="setCPUMaxFreq(1800)">Max 1800</button>
+                    <button class="preset-btn" onclick="setCPUMaxFreq(2800)">Max 2800</button>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">CPU Information</div>
                 <div class="info-box">
                     <div id="cpuInfo">Loading...</div>
                 </div>
@@ -130,7 +139,19 @@
                 </select>
             </div>
             <div class="section">
-                <div class="section-title">GPU Info</div>
+                <div class="section-title">GPU Options</div>
+                <div class="toggle-list">
+                    <div class="toggle-item">
+                        <span>GPU Boost</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-gpuboost" onchange="toggleFPSBoost(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">GPU Information</div>
                 <div class="info-box">
                     <div id="gpuInfo">Loading...</div>
                 </div>
@@ -148,6 +169,12 @@
                     <button class="preset-btn" onclick="setMemoryPreset('extreme')">Extreme</button>
                 </div>
             </div>
+            <div class="section">
+                <div class="section-title">Memory Information</div>
+                <div class="info-box">
+                    <div id="memoryInfo">Loading...</div>
+                </div>
+            </div>
         </div>
 
         <!-- IO Page -->
@@ -161,6 +188,12 @@
                     <option value="mq-deadline">MQ Deadline</option>
                     <option value="bfq">BFQ</option>
                 </select>
+            </div>
+            <div class="section">
+                <div class="section-title">IO Information</div>
+                <div class="info-box">
+                    <div id="ioInfo">Loading...</div>
+                </div>
             </div>
         </div>
 
@@ -186,12 +219,25 @@
                         </label>
                     </div>
                     <div class="toggle-item">
-                        <span>High Brightness</span>
+                        <span>High Brightness Mode</span>
                         <label class="switch">
                             <input type="checkbox" id="toggle-hbm" onchange="toggleHBM(this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
+                    <div class="toggle-item">
+                        <span>Auto Brightness</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-autobright" onchange="toggleAutoBrightness(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">Display Information</div>
+                <div class="info-box">
+                    <div id="displayInfo">Loading...</div>
                 </div>
             </div>
         </div>
@@ -203,9 +249,15 @@
                 <select class="select-box" id="thermalProfile" onchange="setThermalProfile(this.value)">
                     <option value="default">Default</option>
                     <option value="performance">Performance</option>
+                    <option value="balanced">Balanced</option>
                     <option value="battery">Battery</option>
-                    <option value="game">Game</option>
                 </select>
+            </div>
+            <div class="section">
+                <div class="section-title">Thermal Information</div>
+                <div class="info-box">
+                    <div id="thermalInfo">Loading...</div>
+                </div>
             </div>
         </div>
 
@@ -218,6 +270,24 @@
                     <button class="preset-btn" onclick="setBatteryProfile('maxbatt')">Max Battery</button>
                     <button class="preset-btn" onclick="setBatteryProfile('fast')">Fast Charge</button>
                     <button class="preset-btn" onclick="setBatteryProfile('smart')">Smart</button>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">Battery Options</div>
+                <div class="toggle-list">
+                    <div class="toggle-item">
+                        <span>Bypass Charging</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-bypass" onchange="toggleBypass(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">Battery Information</div>
+                <div class="info-box">
+                    <div id="batteryInfo">Loading...</div>
                 </div>
             </div>
         </div>
@@ -248,6 +318,52 @@
                             <span class="slider"></span>
                         </label>
                     </div>
+                    <div class="toggle-item">
+                        <span>CPU Core Control</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-corectrl" onchange="toggleCoreCtrl(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Device Info Page -->
+        <div id="page-device" class="page">
+            <div class="section">
+                <div class="section-title">Device Information</div>
+                <div class="info-box">
+                    <div id="deviceInfo">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Page -->
+        <div id="page-network" class="page">
+            <div class="section">
+                <div class="section-title">Network Options</div>
+                <div class="toggle-list">
+                    <div class="toggle-item">
+                        <span>WiFi</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-wifi" onchange="toggleWiFi(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-item">
+                        <span>Mobile Data</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-data" onchange="toggleMobileData(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">Network Information</div>
+                <div class="info-box">
+                    <div id="networkInfo">Loading...</div>
                 </div>
             </div>
         </div>
@@ -255,11 +371,30 @@
         <!-- Settings Page -->
         <div id="page-settings" class="page">
             <div class="section">
+                <div class="section-title">Kernel Tweaks</div>
+                <div class="preset-grid">
+                    <button class="preset-btn" onclick="applyKernelTweaks('performance')">Performance</button>
+                    <button class="preset-btn" onclick="applyKernelTweaks('battery')">Battery</button>
+                </div>
+                <div class="toggle-list" style="margin-top: 15px;">
+                    <div class="toggle-item">
+                        <span>Debug Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-debug" onchange="toggleDebug(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
                 <div class="section-title">About</div>
                 <div class="info-box">
                     <p><strong>Hyperion Project</strong></p>
                     <p>Version: 1.0.1</p>
                     <p>Author: ShadowBytePrjkt</p>
+                    <p style="margin-top: 10px; font-size: 12px; color: var(--text-secondary);">
+                        Built with ❤️ for performance enthusiasts
+                    </p>
                 </div>
             </div>
             <div class="section">
@@ -282,9 +417,9 @@
             <span class="nav-icon">🎮</span>
             <span>GPU</span>
         </button>
-        <button class="nav-btn" data-page="page-memory">
-            <span class="nav-icon">🧠</span>
-            <span>RAM</span>
+        <button class="nav-btn" data-page="page-device">
+            <span class="nav-icon">📱</span>
+            <span>Device</span>
         </button>
         <button class="nav-btn" data-page="page-settings">
             <span class="nav-icon">⚡</span>

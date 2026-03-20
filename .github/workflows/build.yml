@@ -18,10 +18,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up JDK
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
+          distribution: 'temurin'
       
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
@@ -78,23 +79,10 @@ jobs:
           name: hyperion-module
           path: hyperion-module.zip
       
-      - name: Upload binaries artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: hyperion-binaries
-          path: |
-            hyperion-core/hyperiond-arm64
-            hyperion-core/hyperiond-arm7
-            hyperion-core/hyperiond-x86
-            hyperion-core/hyperiond-x86_64
-            hyperion-core/hyperion-arm64
-      
       - name: Upload to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            hyperion-module.zip
-            hyperion-binaries.tar.gz
+          files: hyperion-module.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

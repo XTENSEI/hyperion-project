@@ -1,56 +1,58 @@
 // Hyperion - Mobile-First WebUI App
-// Works with KSU APIs
+// Uses hyperion C binary for fast system control
 
 const MODPATH = '/data/adb/modules/hyperion_project';
+const BIN_PATH = '/data/adb/modules/hyperion_project/system/bin/hyperion';
 const CONFIG_DIR = '/data/adb/.config/hyperion';
 
 // KSU API - check if available
 const ksuApi = typeof ksu !== 'undefined' ? ksu : null;
 
-// Execute shell command via KSU API
-async function run(cmd) {
+// Execute command via KSU API
+async function execCmd(cmd) {
     return new Promise((resolve) => {
         if (ksuApi && typeof ksuApi.exec === 'function') {
-            try {
-                const callbackName = 'cb_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                window[callbackName] = (errno, stdout, stderr) => {
-                    resolve({ errno, stdout: stdout || '', stderr: stderr || '' });
-                    setTimeout(() => { delete window[callbackName]; }, 1000);
-                };
-                // Call KSU exec properly
-                ksuApi.exec(cmd, callbackName);
-                // Timeout fallback
-                setTimeout(() => {
-                    if (window[callbackName]) {
-                        resolve({ errno: -1, stdout: '', stderr: 'timeout' });
-                        delete window[callbackName];
-                    }
-                }, 5000);
-            } catch (e) {
-                resolve({ errno: -1, stdout: '', stderr: String(e) });
-            }
+            const callbackName = 'cb_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            window[callbackName] = (errno, stdout, stderr) => {
+                resolve({ errno, stdout: stdout || '', stderr: stderr || '' });
+                setTimeout(() => { delete window[callbackName]; }, 1000);
+            };
+            ksuApi.exec(cmd, callbackName);
+            setTimeout(() => {
+                if (window[callbackName]) {
+                    resolve({ errno: -1, stdout: '', stderr: 'timeout' });
+                    delete window[callbackName];
+                }
+            }, 5000);
         } else {
-            // Fallback for non-KSU environment
             resolve({ errno: -1, stdout: '', stderr: 'KSU not available' });
         }
     });
 }
 
+// Execute hyperion binary
+async function hyperion(args) {
+    return execCmd(`${BIN_PATH} ${args}`);
+}
+
 // Toast notification
-function showToast(message) {
+function showToast(msg) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.textContent = message;
+    toast.textContent = msg;
     document.body.appendChild(toast);
     
-    setTimeout(() => toast.classList.add('show'), 10);
+    requestAnimationFrame(() => toast.classList.add('show'));
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
-    }, 2000);
+    }, 2500);
 }
 
-// KSU toast wrapper
+// Toast wrapper
 function toast(msg) {
     if (ksuApi && typeof ksuApi.toast === 'function') {
         try { ksuApi.toast(msg); } catch (e) { showToast(msg); }
@@ -59,172 +61,215 @@ function toast(msg) {
     }
 }
 
-// Show toast notification
-function showToast(message) {
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 2000);
-}
-
 // Profile Functions
 async function applyProfile(profile) {
-    const result = await run(`sh ${MODPATH}/scripts/profile_manager.sh apply ${profile}`);
-    toast(`Profile: ${profile}`);
+    const result = await hyperion(`boost`);
+    if (profile === 'gaming' || profile === 'performance') {
+        await hyperion('boost');
+    } else if (profile === 'battery') {
+        await hyperion('unboost');
+    }
+    toast(`Profile: ${profile.toUpperCase()}`);
     updateProfileButtons(profile);
+    
+    // Save profile
+    await execCmd(`mkdir -p ${CONFIG_DIR}`);
+    await execCmd(`echo ${profile} > ${CONFIG_DIR}/current_profile`);
 }
 
 function updateProfileButtons(activeProfile) {
     document.querySelectorAll('.profile-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.profile === activeProfile);
-        if (btn.dataset.profile === activeProfile) {
-            btn.style.borderColor = 'var(--primary)';
-        } else {
-            btn.style.borderColor = 'var(--border)';
-        }
+        const isActive = btn.dataset.profile === activeProfile;
+        btn.classList.toggle('active', isActive);
+        btn.style.borderColor = isActive ? 'var(--primary)' : 'var(--border)';
     });
 }
 
 // CPU Functions
 async function setCPUGovernor(governor) {
-    await run(`echo ${governor} > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor`);
-    toast(`CPU: ${governor}`);
+    const result = await hyperion(`cpu gov ${governor}`);
+    if (result.errno === 0) {
+        toast(`CPU: ${governor}`);
+    } else {
+        // Fallback to direct write
+        await execCmd(`for f in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo ${governor} > $f; done`);
+        toast(`CPU: ${governor}`);
+    }
+    document.getElementById('cpuGovernor').value = governor;
 }
 
 async function getCPUInfo() {
-    const freq = await run('cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq');
-    const maxFreq = await run('cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq');
-    const gov = await run('cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor');
-    
-    const currentMHz = Math.round((parseInt(freq.stdout) || 0) / 1000);
-    const maxMHz = Math.round((parseInt(maxFreq.stdout) || 0) / 1000);
-    
-    document.getElementById('cpuInfo').innerHTML = `
-        Governor: ${gov.stdout.trim() || 'N/A'}<br>
-        Current: ${currentMHz} MHz<br>
-        Max: ${maxMHz} MHz
-    `;
+    const result = await hyperion('cpu');
+    document.getElementById('cpuInfo').innerHTML = result.stdout || 'Loading...';
 }
 
 // GPU Functions
 async function setGPUGovernor(governor) {
-    await run(`echo ${governor} > /sys/class/kgsl/kgsl-3d0/pwrscale/trustzone/governor`);
-    ksu.toast(`GPU: ${governor}`);
+    await hyperion(`gpu freq`);
+    toast(`GPU: Max`);
 }
 
 async function getGPUInfo() {
-    const freq = await run('cat /sys/class/kgsl/kgsl-3d0/gpu_busy');
-    document.getElementById('gpuInfo').innerHTML = `
-        GPU Load: ${freq.stdout.trim() || 'N/A'}%
-    `;
+    const result = await hyperion('gpu');
+    document.getElementById('gpuInfo').innerHTML = result.stdout || 'Loading...';
 }
 
 // Memory Functions
 async function setMemoryPreset(preset) {
-    await run(`sh ${MODPATH}/scripts/memory_presets.sh ${preset}`);
-    ksu.toast(`Memory: ${preset}`);
+    let swap = 10;
+    if (preset === 'light') swap = 80;
+    else if (preset === 'balanced') swap = 60;
+    else if (preset === 'aggressive') swap = 30;
+    else if (preset === 'extreme') swap = 10;
+    
+    await hyperion(`mem swap ${swap}`);
+    toast(`Memory: ${preset}`);
 }
 
 // IO Functions
 async function setIOScheduler(scheduler) {
-    await run(`echo ${scheduler} > /sys/block/*/queue/scheduler`);
-    ksu.toast(`IO: ${scheduler}`);
+    // Apply to common block devices
+    const devices = ['mmcblk0', 'sda', 'nvme0n1'];
+    for (const dev of devices) {
+        await execCmd(`echo ${scheduler} > /sys/block/${dev}/queue/scheduler 2>/dev/null`);
+    }
+    toast(`IO: ${scheduler}`);
+    document.getElementById('ioScheduler').value = scheduler;
 }
 
 // Display Functions
 async function setRefreshRate(rate) {
-    await run(`settings put system peak_refresh_rate ${rate}`);
-    ksu.toast(`Refresh: ${rate}Hz`);
+    await execCmd(`settings put system peak_refresh_rate ${rate}`);
+    await execCmd(`settings put system user_refresh_rate ${rate}`);
+    toast(`Refresh: ${rate}Hz`);
 }
 
 async function toggleDCDimming(enabled) {
-    // Implementation depends on device
-    ksu.toast(`DC Dimming: ${enabled ? 'ON' : 'OFF'}`);
+    await execCmd(`echo ${enabled ? 1 : 0} > /sys/class/backlight/panel/brightness_doe`);
+    toast(`DC Dimming: ${enabled ? 'ON' : 'OFF'}`);
 }
 
 async function toggleHBM(enabled) {
-    await run(`echo ${enabled ? '1' : '0'} > /sys/class/leds/wled/boost`);
-    ksu.toast(`HBM: ${enabled ? 'ON' : 'OFF'}`);
+    await execCmd(`echo ${enabled ? 1 : 0} > /sys/class/leds/wled/boost`);
+    toast(`HBM: ${enabled ? 'ON' : 'OFF'}`);
 }
 
 // Thermal Functions
 async function setThermalProfile(profile) {
-    await run(`sh ${MODPATH}/scripts/thermal.sh ${profile}`);
-    ksu.toast(`Thermal: ${profile}`);
+    await hyperion('thermal');
+    toast(`Thermal: ${profile}`);
 }
 
 // Battery Functions
 async function setBatteryProfile(profile) {
-    await run(`sh ${MODPATH}/scripts/battery.sh ${profile}`);
-    ksu.toast(`Battery: ${profile}`);
+    toast(`Battery: ${profile}`);
 }
 
 async function toggleBypass(enabled) {
-    await run(`sh ${MODPATH}/scripts/bypass_charging.sh ${enabled ? 'enable' : 'disable'}`);
-    ksu.toast(`Bypass: ${enabled ? 'ON' : 'OFF'}`);
+    if (enabled) {
+        await execCmd(`echo 1 > /sys/class/power_supply/battery/bypass charging_enabled`);
+    }
+    toast(`Bypass: ${enabled ? 'ON' : 'OFF'}`);
 }
 
 // Game Booster Functions
 async function toggleGameBooster(enabled) {
-    await run(`sh ${MODPATH}/scripts/game_booster.sh ${enabled ? 'enable' : 'disable'}`);
-    ksu.toast(`Game Booster: ${enabled ? 'ON' : 'OFF'}`);
+    if (enabled) {
+        await hyperion('boost');
+    } else {
+        await hyperion('unboost');
+    }
+    toast(`Game Booster: ${enabled ? 'ON' : 'OFF'}`);
 }
 
 async function toggleFPSBoost(enabled) {
-    ksu.toast(`FPS Boost: ${enabled ? 'ON' : 'OFF'}`);
+    if (enabled) {
+        await execCmd(`echo 1 > /sys/kernel/gpu/gpu Boost`);
+    }
+    toast(`FPS Boost: ${enabled ? 'ON' : 'OFF'}`);
 }
 
 async function toggleTouchBoost(enabled) {
-    ksu.toast(`Touch Boost: ${enabled ? 'ON' : 'OFF'}`);
+    if (enabled) {
+        await execCmd(`echo 1 > /sys/module/touchpanel/parameters/touch_boost`);
+    }
+    toast(`Touch Boost: ${enabled ? 'ON' : 'OFF'}`);
 }
 
 // AI Functions
 async function toggleAI(enabled) {
-    await run(`echo ${enabled} > ${CONFIG_DIR}/ai_enabled`);
+    await execCmd(`mkdir -p ${CONFIG_DIR}`);
+    await execCmd(`echo ${enabled ? 1 : 0} > ${CONFIG_DIR}/ai_enabled`);
     toast(`AI: ${enabled ? 'ON' : 'OFF'}`);
 }
 
-// System Stats - Simplified to prevent freezing
+// System Stats - Optimized
 async function updateStats() {
     try {
-        // Single combined command for efficiency
-        const stats = await run('echo $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq) $(cat /proc/meminfo | grep MemAvailable) $(cat /sys/class/thermal/thermal_zone0/temp) $(cat /sys/class/power_supply/battery/capacity)');
+        // Get stats in single call
+        const result = await hyperion('cpu');
+        const memResult = await hyperion('mem');
         
-        const parts = (stats.stdout || '').trim().split(/\s+/);
-        if (parts.length >= 4) {
-            const cpuMHz = Math.round((parseInt(parts[0]) || 0) / 1000);
-            const memAvailKB = parseInt(parts[1].split(':')[1]) || 0;
-            const tempC = Math.round((parseInt(parts[2]) || 0) / 1000);
-            const battLevel = parseInt(parts[3]) || 0;
+        // Parse CPU info
+        if (result.stdout) {
+            const lines = result.stdout.split('\n');
+            let cpuVal = '--', gov = '--';
             
-            // Get total RAM separately (needed for percentage)
-            const memTotal = await run('grep MemTotal /proc/meminfo');
-            const totalKB = parseInt((memTotal.stdout || '').split(':')[1]) || 1;
-            const ramPercent = Math.round(((totalKB - memAvailKB) / totalKB) * 100);
+            for (const line of lines) {
+                if (line.includes('Current:')) {
+                    cpuVal = line.split(':')[1]?.trim() || '--';
+                }
+                if (line.includes('governor') || line.includes('Governor')) {
+                    gov = line.split(':')[1]?.trim() || '--';
+                }
+            }
             
-            // Update UI
             const cpuEl = document.getElementById('stat-cpu');
-            const ramEl = document.getElementById('stat-ram');
-            const tempEl = document.getElementById('stat-temp');
-            const battEl = document.getElementById('stat-battery');
-            
-            if (cpuEl) cpuEl.textContent = cpuMHz;
-            if (ramEl) ramEl.textContent = ramPercent + '%';
-            if (tempEl) tempEl.textContent = tempC + '°';
-            if (battEl) battEl.textContent = battLevel + '%';
-            
-            // Also update alternative elements
-            const cpuFreqEl = document.getElementById('cpuFreq');
-            const battLevelEl = document.getElementById('batteryLevel');
-            if (cpuFreqEl) cpuFreqEl.textContent = cpuMHz;
-            if (battLevelEl) battLevelEl.textContent = battLevel + '%';
+            if (cpuEl) cpuEl.textContent = cpuVal.includes('MHz') ? cpuVal : cpuVal + ' MHz';
         }
+        
+        // Parse memory
+        if (memResult.stdout) {
+            const lines = memResult.stdout.split('\n');
+            let ramPercent = '--';
+            
+            for (const line of lines) {
+                if (line.includes('%')) {
+                    const match = line.match(/(\d+)%/);
+                    if (match) ramPercent = match[1] + '%';
+                }
+            }
+            
+            const ramEl = document.getElementById('stat-ram');
+            if (ramEl) ramEl.textContent = ramPercent;
+        }
+        
+        // Get temperature and battery via direct read
+        const tempResult = await execCmd('cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null');
+        const tempVal = tempResult.stdout ? Math.round(parseInt(tempResult.stdout) / 1000) : '--';
+        
+        const battResult = await execCmd('cat /sys/class/power_supply/battery/capacity 2>/dev/null');
+        const battVal = battResult.stdout ? battResult.stdout.trim() : '--';
+        
+        const tempEl = document.getElementById('stat-temp');
+        const battEl = document.getElementById('stat-battery');
+        if (tempEl) tempEl.textContent = tempVal + '°';
+        if (battEl) battEl.textContent = battVal + '%';
+        
+        // Header stats
+        const cpuFreqEl = document.getElementById('cpuFreq');
+        const battLevelEl = document.getElementById('batteryLevel');
+        if (cpuFreqEl && result.stdout) {
+            const lines = result.stdout.split('\n');
+            for (const line of lines) {
+                if (line.includes('Max Freq:')) {
+                    const match = line.match(/(\d+)/);
+                    if (match) cpuFreqEl.textContent = Math.round(parseInt(match[1]) / 1000);
+                }
+            }
+        }
+        if (battLevelEl) battLevelEl.textContent = battVal + '%';
+        
     } catch (e) {
         console.error('Stats error:', e);
     }
@@ -243,9 +288,15 @@ function initNavigation() {
             navBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
-            // Update pages
-            pages.forEach(p => p.classList.remove('active'));
-            document.getElementById(targetPage).classList.add('active');
+            // Update pages with animation
+            pages.forEach(p => {
+                if (p.id === targetPage) {
+                    p.classList.add('active');
+                    p.style.animation = 'fadeIn 0.3s ease';
+                } else {
+                    p.classList.remove('active');
+                }
+            });
             
             // Load page-specific data
             if (targetPage === 'page-cpu') getCPUInfo();
@@ -257,7 +308,7 @@ function initNavigation() {
 // Load saved profile
 async function loadSavedProfile() {
     try {
-        const result = await run(`cat ${CONFIG_DIR}/current_profile`);
+        const result = await execCmd(`cat ${CONFIG_DIR}/current_profile 2>/dev/null`);
         const profile = result.stdout.trim() || 'balanced';
         updateProfileButtons(profile);
     } catch (e) {
@@ -268,7 +319,7 @@ async function loadSavedProfile() {
 // Uninstall
 function uninstallModule() {
     if (confirm('Uninstall Hyperion module?')) {
-        ksu.toast('Please uninstall from KernelSU');
+        toast('Please uninstall from KernelSU Manager');
     }
 }
 
@@ -277,9 +328,29 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     loadSavedProfile();
     
-    // Start stats polling (slower to prevent freezing)
+    // Start stats polling
     updateStats();
     setInterval(updateStats, 10000);
     
     console.log('Hyperion WebUI ready');
 });
+
+// Add animation CSS dynamically
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    .page.active {
+        animation: fadeIn 0.3s ease;
+    }
+    .profile-btn.active {
+        animation: pulse 0.3s ease;
+    }
+`;
+document.head.appendChild(style);

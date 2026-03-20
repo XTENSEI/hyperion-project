@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+DIRNAME=$(dirname "$0")
+APP_BASE_NAME=$(basename "$0")
+CLASSPATH=$DIRNAME/gradle/lib/gradle-launcher-8.4.jar
+exec java -classpath "$CLASSPATH" org.gradle.launcher.GradleMain "$@"
